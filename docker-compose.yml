@@ -64,7 +64,7 @@ services:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
-      # REMOVED /var/lib/docker to fix "Read-only file system" error
+      # /var/lib/docker removed for compatibility
     networks:
       webnet:
         ipv4_address: 192.168.1.60
@@ -87,6 +87,11 @@ services:
     container_name: grafana
     ports:
       - "3000:3000"
+    volumes:
+      # 1. Ye instructor wali file mount ki hai (Auto-Connect Prometheus)
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      # 2. Ye data save karne ke liye hai (Password/Settings save rahengi)
+      - grafana_data:/var/lib/grafana
     networks:
       webnet:
         ipv4_address: 192.168.1.50
@@ -97,3 +102,7 @@ networks:
     ipam:
       config:
         - subnet: 192.168.1.0/24
+
+# Volume yahan define karna zaroori hai
+volumes:
+  grafana_data:
