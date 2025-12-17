@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'haproxy'
+    static_configs:
+      - targets: ['haproxy:8080']
+
+  # cAdvisor gives metrics for Site1, Site2, Site3 (CPU, RAM, Network)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']

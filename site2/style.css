@@ -1,0 +1,2 @@
+body { background-color: #ccffcc; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+.container { text-align: center; padding: 20px; border: 2px solid #00cc00; background: white; }

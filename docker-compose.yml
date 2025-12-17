@@ -1,0 +1,99 @@
+version: '3.8'
+services:
+  site1:
+    build: ./site1
+    container_name: site1
+    ports:
+      - "8081:81"
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.11
+
+  site2:
+    build: ./site2
+    container_name: site2
+    ports:
+      - "8082:82"
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.12
+
+  site3:
+    build: ./site3
+    container_name: site3
+    ports:
+      - "8083:83"
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.13
+
+  haproxy:
+    image: haproxy:alpine
+    container_name: haproxy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - site1
+      - site2
+      - site3
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.20
+
+  keepalived:
+    image: osixia/keepalived:latest
+    container_name: keepalived
+    cap_add:
+      - NET_ADMIN
+      - NET_BROADCAST
+      - NET_RAW
+    volumes:
+      - ./keepalived/keepalived.conf:/usr/local/etc/keepalived/keepalived.conf:ro
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.30
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8090:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      # REMOVED /var/lib/docker to fix "Read-only file system" error
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.60
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - cadvisor
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.40
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      webnet:
+        ipv4_address: 192.168.1.50
+
+networks:
+  webnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
